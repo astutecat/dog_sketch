@@ -10,7 +10,7 @@ defmodule MemoryHelper do
   end
 end
 
-alias DogSketch.{SimpleDog, ExactDog}
+alias DogSketch.{SimpleDog, BoundedDog, ExactDog}
 
 sd =
   Enum.reduce(1..100_000, SimpleDog.new(error: 0.02), fn _x, sd ->
@@ -22,5 +22,13 @@ ed =
     ExactDog.insert(sd, :rand.uniform(10000))
   end)
 
+{bd, bd2} = Enum.reduce(1..1_000_000, {BoundedDog.new(), BoundedDog.new(max_buckets: 512)}, fn _x, {bd, bd2} ->
+  val = :rand.uniform(10000)
+  {BoundedDog.insert(bd, val), BoundedDog.insert(bd2, val)}
+  end)
+
 IO.inspect(MemoryHelper.memory_kb(sd), label: "100k inserts SimpleDog 2% error (kb)")
 IO.inspect(MemoryHelper.memory_kb(ed), label: "100k inserts ExactDog (kb)")
+
+IO.inspect(MemoryHelper.memory_kb(bd), label: "1M inserts BoundedDog-2048 (kb)")
+IO.inspect(MemoryHelper.memory_kb(bd2), label: "1M inserts BoundedDog-512 (kb)")
